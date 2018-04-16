@@ -16,8 +16,6 @@ const EGG_LOADER = Symbol.for('egg#loader');
 // EggLoader start
 class EggLoader {
     constructor(options) {
-        console.log(1111);
-        console.log(options);
         this.options = options;
         this.app = this.options.app;
     }
@@ -40,6 +38,7 @@ class EggLoader {
     }
 }
 
+//定义最小路由的加载文件
 const LoaderMixinRouter = {
     loadRouter() {
         //使用path模块访问当前路径，与实际路由系统入口文件路径进行拼接，最终将该路劲加入到eggLoader实体启动对象中
@@ -53,13 +52,20 @@ const loaders = [
 ];
 
 for (const loader of loaders) {
+    //Object.assign(a,b);  将b对象的属性合并添加到a对象，同名属性覆盖，否则添加
+    //一个类prototype上的添加属性，用此类实例化的对象可以直接用`obj.key`的方式获取次属性
+    console.log(EggLoader.prototype);
     Object.assign(EggLoader.prototype, loader);
+    console.log('-————————=——');
+    console.log(EggLoader.prototype.loadRouter.toString());
 }
 // EggLoader end
 
 // EggCore start
 class EggCore extends Koa {
     constructor(options) {
+        console.log('---');
+        console.log(options);
         // process cwd() 方法返回 Node.js 进程当前工作的目录
         options.baseDir = options.baseDir || process.cwd();
         options.type = options.type || 'application';
@@ -108,11 +114,12 @@ class EggApplication extends EggCore {
 
     constructor(options) {
         // console.log(new AppWorkerLoader);
+        console.log('+++');
+        console.log(options);
         super(options);
         this.on('error', err => {
             console.error(err);
         });
-        console.log(EGG_LOADER);
         this.loader.loadAll();
     }
 
@@ -128,7 +135,7 @@ class EggApplication extends EggCore {
 // EggApplication end
 
 
-// Router start
+// Router start 加载路由系统
 class Router extends KoaRouter {
     constructor(opts, app) {
         console.log(opts);
@@ -137,5 +144,7 @@ class Router extends KoaRouter {
     }
 }
 
+console.log(555);
+console.log(require.main);
 // Router end
 module.exports = EggApplication;
