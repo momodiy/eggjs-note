@@ -12,13 +12,12 @@ const is = require('is-type-of');
 
 const ROUTER = Symbol('EggCore#router');
 const EGG_LOADER = Symbol.for('egg#loader');
-const methods = ['head', 'options', 'get', 'put', 'patch', 'post', 'delete', 'all'];
-
 
 // EggLoader start
 class EggLoader {
     constructor(options) {
-        console.log(2);
+        console.log(1111);
+        console.log(options);
         this.options = options;
         this.app = this.options.app;
     }
@@ -29,12 +28,13 @@ class EggLoader {
         if (!fs.existsSync(filepath)) {
             return null;
         }
+        //path.extname(PATH) 返回路径扩展名
         const extname = path.extname(filepath);
+        console.log(extname);
         if (!['.js', '.node', '.json', ''].includes(extname)) {
             return fs.readFileSync(filepath);
         }
         const ret = require(filepath);
-// function(arg1, args, ...) {}
         if (inject.length === 0) inject = [this.app];
         return is.function(ret) ? ret(...inject) : ret;
     }
@@ -54,24 +54,24 @@ const loaders = [
 
 for (const loader of loaders) {
     Object.assign(EggLoader.prototype, loader);
-    console.log(EggLoader.prototype);
 }
 // EggLoader end
 
 // EggCore start
 class EggCore extends Koa {
     constructor(options) {
-        console.log(3);
         // process cwd() 方法返回 Node.js 进程当前工作的目录
         options.baseDir = options.baseDir || process.cwd();
         options.type = options.type || 'application';
         super(options);
 
         const Loader = this[EGG_LOADER];
+        console.log(Loader.toString());
         this.loader = new Loader({
             baseDir: options.baseDir,
             app: this,
         });
+        console.log(this);
     }
 
     //get、set 存值函数和取值函数，拦截该属性的存取行为。
@@ -83,6 +83,7 @@ class EggCore extends Koa {
         const router = this[ROUTER] = new Router({sensitive: true}, this);
         // register router middleware
         this.beforeStart(() => {
+            console.log(router.middleware());
             this.use(router.middleware());
         });
         return router;
@@ -93,23 +94,12 @@ class EggCore extends Koa {
     }
 }
 
-methods.concat(['resources', 'register', 'redirect']).forEach(function (method) {
-    EggCore.prototype[method] = function (...args) {
-        console.log(666);
-        console.log(args);
-        console.log(666);
-        this.router[method](...args);
-        return this;
-    };
-});
 // EggCore end
 
 
 // EggApplication start
 class AppWorkerLoader extends EggLoader {
     loadAll() {
-        console.log(4);
-        console.log('loadRouter');
         this.loadRouter();
     }
 }
@@ -117,13 +107,12 @@ class AppWorkerLoader extends EggLoader {
 class EggApplication extends EggCore {
 
     constructor(options) {
-        console.log(5);
+        // console.log(new AppWorkerLoader);
         super(options);
         this.on('error', err => {
-            console.log(3333);
             console.error(err);
         });
-
+        console.log(EGG_LOADER);
         this.loader.loadAll();
     }
 
@@ -142,12 +131,11 @@ class EggApplication extends EggCore {
 // Router start
 class Router extends KoaRouter {
     constructor(opts, app) {
-        console.log(1);
+        console.log(opts);
         super(opts);
         this.app = app;
     }
 }
 
 // Router end
-
 module.exports = EggApplication;

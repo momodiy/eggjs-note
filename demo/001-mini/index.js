@@ -8,12 +8,8 @@ const app = new EggApplication({
 });
 
 const server = http.createServer(app.callback());
-
 //server连接错误
 server.once('error', err => {
-    console.log('-----------------------------------------------------');
-    console.log(err);
-    console.log('-----------------------------------------------------');
     console.log('[app_worker] server got error: %s, code: %s', err.message, err.code);
     process.exit(1);
 });
