@@ -28,7 +28,6 @@ class EggLoader {
         }
         //path.extname(PATH) 返回路径扩展名
         const extname = path.extname(filepath);
-        console.log(extname);
         if (!['.js', '.node', '.json', ''].includes(extname)) {
             return fs.readFileSync(filepath);
         }
@@ -54,31 +53,24 @@ const loaders = [
 for (const loader of loaders) {
     //Object.assign(a,b);  将b对象的属性合并添加到a对象，同名属性覆盖，否则添加
     //一个类prototype上的添加属性，用此类实例化的对象可以直接用`obj.key`的方式获取次属性
-    console.log(EggLoader.prototype);
     Object.assign(EggLoader.prototype, loader);
-    console.log('-————————=——');
-    console.log(EggLoader.prototype.loadRouter.toString());
 }
 // EggLoader end
 
 // EggCore start
 class EggCore extends Koa {
     constructor(options) {
-        console.log('---');
-        console.log(options);
         // process cwd() 方法返回 Node.js 进程当前工作的目录
         options.baseDir = options.baseDir || process.cwd();
         options.type = options.type || 'application';
         super(options);
 
-        //获取AppWorkerLoader类
+        //获取AppWorkerLoader类,获取时触发EggApplication的get方法
         const Loader = this[EGG_LOADER];
-        console.log(Loader.toString());
         this.loader = new Loader({
             baseDir: options.baseDir,
             app: this,
         });
-        console.log(this);
     }
 
     //get、set 存值函数和取值函数，拦截该属性的存取行为。
@@ -90,13 +82,13 @@ class EggCore extends Koa {
         const router = this[ROUTER] = new Router({sensitive: true}, this);
         // register router middleware
         this.beforeStart(() => {
-            console.log(router.middleware());
             this.use(router.middleware());
         });
         return router;
     }
 
     beforeStart(fn) {
+        //前事件轮询队列的任务全部完成，fn就会被依次调用。
         process.nextTick(fn)
     }
 }
@@ -107,19 +99,21 @@ class EggCore extends Koa {
 // EggApplication start
 class AppWorkerLoader extends EggLoader {
     loadAll() {
-        console.log(this);
         //调用EggLoader.prototype上边的loadRouter方法
         this.loadRouter();
     }
 }
 
 class EggApplication extends EggCore {
-
+    /*
+    * 子类没有自己的this对象，而是继承父类的this对象，然后对其进行加工
+    * 子类在调用super方法后,this指的是通过父类对象constructor实例化生成的对象
+    * 可以通过修改this改变这个对象的值
+    * */
     constructor(options) {
         // console.log(new AppWorkerLoader);
-        console.log('+++');
-        console.log(options);
         super(options);
+
         this.on('error', err => {
             console.error(err);
         });
@@ -136,8 +130,6 @@ class EggApplication extends EggCore {
     }
 
     get [Symbol.for('egg#loader')]() {
-        console.log(this);
-        console.log(AppWorkerLoader);
         return AppWorkerLoader;
     }
 }
@@ -150,9 +142,13 @@ class Router extends KoaRouter {
     constructor(opts, app) {
         console.log(opts);
         super(opts);
+        console.log(this);
+        console.log(app);
         this.app = app;
+        console.log(this);
     }
 }
 
+console.log(new KoaRouter());
 // Router end
 module.exports = EggApplication;
