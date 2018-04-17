@@ -71,6 +71,7 @@ class EggCore extends Koa {
         options.type = options.type || 'application';
         super(options);
 
+        //获取AppWorkerLoader类
         const Loader = this[EGG_LOADER];
         console.log(Loader.toString());
         this.loader = new Loader({
@@ -106,6 +107,8 @@ class EggCore extends Koa {
 // EggApplication start
 class AppWorkerLoader extends EggLoader {
     loadAll() {
+        console.log(this);
+        //调用EggLoader.prototype上边的loadRouter方法
         this.loadRouter();
     }
 }
@@ -123,11 +126,18 @@ class EggApplication extends EggCore {
         this.loader.loadAll();
     }
 
+    /*
+    * Class 中的get方法用于自定义取值函数
+    * 当该类实例化的对象获取使用get定义的值时会返回自定义的值
+    * 当该类实例化的对象使用了set方法对某个值进行定义，在修改这个值时实际保存的值为set中定义的值
+    * */
     get [Symbol.for('egg#eggPath')]() {
         return __dirname;
     }
 
     get [Symbol.for('egg#loader')]() {
+        console.log(this);
+        console.log(AppWorkerLoader);
         return AppWorkerLoader;
     }
 }
@@ -144,7 +154,5 @@ class Router extends KoaRouter {
     }
 }
 
-console.log(555);
-console.log(require.main);
 // Router end
 module.exports = EggApplication;
