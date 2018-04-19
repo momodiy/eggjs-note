@@ -14,6 +14,7 @@ class EggLoader {
 
 
   loadFile(filepath, ...inject) {
+      // 如果路径存在，则返回 true，否则返回 false。
     if (!fs.existsSync(filepath)) {
       return null;
     }
