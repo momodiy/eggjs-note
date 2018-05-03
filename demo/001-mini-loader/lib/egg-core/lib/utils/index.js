@@ -11,6 +11,7 @@ module.exports = {
   methods: [ 'head', 'options', 'get', 'put', 'patch', 'post', 'delete', 'all' ],
 
   middleware(fn) {
+    //判断传入的fn是否为构造器函数，若是将构造器函数转化为Promise异步函数
     return is.generatorFunction(fn) ? convert(fn) : fn;
   },
 

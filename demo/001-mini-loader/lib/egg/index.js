@@ -5,7 +5,7 @@ const { EggCore, EggLoader } = require('./../egg-core');
 // EggApplication start
 class AppWorkerLoader extends EggLoader {
   loadAll() {
-      console.log(this);
+      console.log(this);s
       this.loadController();
     this.loadRouter();
   }
